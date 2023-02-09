@@ -1,5 +1,5 @@
-const mongoose=require('mongoose');
-const {productSchema}=require("./product");
+const mongoose=require("mongoose");
+const { productSchema }=require("./product");
 const userSchema=mongoose.Schema({
     name:{
         require:true,
@@ -32,13 +32,13 @@ const userSchema=mongoose.Schema({
         default:'user',
     }
     ,cart:[
-        product:productSchema,
+        {product:productSchema,
         quantity:{
                 type:Number,
                 required:true,
-        }
+        }}
     ]
 
 });
-const User=mongoose.model('User',userSchema);
+const User=mongoose.model("User",userSchema);
 module.exports=User;

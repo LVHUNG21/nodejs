@@ -2,7 +2,7 @@ const express=require("express");
 const productRouter=express.Router();
 const auth=require('../middlewares/auth');
 //api/products?category=Essentials
-productRouter.get("/api/products",admin,async(req,res)=>
+productRouter.get("/api/products",auth,async(req,res)=>
 {
         try{
                 console.log(req.query.category);
@@ -15,7 +15,7 @@ productRouter.get("/api/products",admin,async(req,res)=>
         }
 });
 //create a get request to search products and get them
-productRouter.get("/api/products/search:name",admin,async(req,res)=>
+productRouter.get("/api/products/search:name",auth,async(req,res)=>
 {
         try{
 //                console.log(req.query.category);

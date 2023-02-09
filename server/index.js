@@ -1,6 +1,8 @@
-
+const productRouter=require('./routes/product');
+const userRouter=require('./routes/user');
 console.log("Hello, World");
-const express=require('express')
+const adminRouter=require('./routes/admin');
+const express=require('express');
 const mongoose=require('mongoose');
 //import 'package:express/express.dart';
 const PORT=3000;
@@ -12,7 +14,7 @@ const authRouter=require('./routes/auth');
 app.use(express.json());
 app.use(authRouter);
 app.use(productRouter);
-app.user(userRouter);
+app.use(userRouter);
 app.use(adminRouter);
 
 //conections
