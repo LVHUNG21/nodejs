@@ -38,6 +38,7 @@ class HomeServices {
         },
       );
     } catch (e) {
+      print("homeservice:error");
       showSnackBar(context, e.toString());
     }
     return productList;

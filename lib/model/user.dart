@@ -63,7 +63,6 @@ class User {
     String? address,
     String? type,
     String? token,
-    // cart,
     List<dynamic>? cart,
   }) {
     return User(

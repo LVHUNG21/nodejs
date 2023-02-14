@@ -3,12 +3,12 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'package:nodejs/constants/error_handling.dart';
-import 'package:nodejs/constants/utils.dart';
-import 'package:nodejs/home/screens/home_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../common/widgets/bottom_bart.dart';
 import '../../../constants/global_variables.dart';
+import '../../../constants/utils.dart';
 import '../../../model/user.dart';
 import '../../../providers/user_provider.dart';
 
@@ -38,7 +38,7 @@ class AuthService {
           'Content-Type': 'application/json; charset=UTF-8',
         },
       );
-      print("successful");
+      print("signup successful");
       httpErrorHandle(
           response: res,
           context: context,
@@ -50,6 +50,7 @@ class AuthService {
     }
   }
 
+  // sign in user
   void signInUser({
     required BuildContext context,
     required String email,
@@ -58,65 +59,71 @@ class AuthService {
     try {
       http.Response res = await http.post(
         Uri.parse('$uri/api/signin'),
-        body: jsonEncode({'email': email, 'password': password}),
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+        }),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
       );
       print(res.body);
       httpErrorHandle(
-          response: res,
-          context: context,
-          onSuccess: () async {
-            SharedPreferences prefs = await SharedPreferences.getInstance();
-            prefs.setString('h-auth-token', jsonDecode(res.body)['token']);
-            Navigator.pushNamedAndRemoveUntil(
-                context, HomeScreen.routeName, (route) => false);
-          });
+        response: res,
+        context: context,
+        onSuccess: () async {
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          Provider.of<UserProvider>(context, listen: false).setUser(res.body);
+          await prefs.setString('x-auth-token', jsonDecode(res.body)['token']);
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            BottomBar.routeName,
+            (route) => false,
+          );
+        },
+      );
     } catch (e) {
-      print('post error');
+      print('signin error');
       showSnackBar(context, e.toString());
     }
   }
 
-  void getUserData(BuildContext context) async {
+// get user data
+  void getUserData(
+    BuildContext context,
+  ) async {
     try {
-      SharedPreferences pref = await SharedPreferences.getInstance();
-      String? token = pref.getString('h-auth-token');
-
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString('x-auth-token');
+      print('$token:token');
       if (token == null) {
-        pref.setString('h-auth-token', '');
+        prefs.setString('x-auth-token', '');
       }
+
       var tokenRes = await http.post(
         Uri.parse('$uri/tokenIsValid'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
-          'h-auth-token': token!
+          'x-auth-token': token!
         },
       );
-      var respone = jsonDecode(tokenRes.body);
+      var response = jsonDecode(tokenRes.body);
+      print("$response:respone");
+      if (response == true) {
+        http.Response userRes = await http.get(
+          Uri.parse('$uri/'),
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+            'x-auth-token': token
+          },
+        );
+        // print(userRes.body);
 
-      if (respone = true) {
-        http.Response userRes = await http.get(Uri.parse('$uri/'),
-            headers: <String, String>{
-              'Content-Type': 'application/json; charset=UTF-8',
-              'h-auth-token': token!
-            });
-        var response = jsonDecode(tokenRes.body);
-
-        if (response == true) {
-          http.Response userRes = await http.get(
-            Uri.parse('$uri/'),
-            headers: <String, String>{
-              'Content-Type': 'application/json; charset=UTF-8',
-              'x-auth-token': token
-            },
-          );
-        }
         var userProvider = Provider.of<UserProvider>(context, listen: false);
         userProvider.setUser(userRes.body);
       }
     } catch (e) {
+      print(':$e:hung:errorgetuserdata');
       showSnackBar(context, e.toString());
     }
   }
